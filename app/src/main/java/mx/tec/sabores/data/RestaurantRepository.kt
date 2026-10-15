@@ -1,21 +1,46 @@
 package mx.tec.sabores.data
 
+import mx.tec.sabores.data.remote.EditReviewBody
+import mx.tec.sabores.data.remote.Network
+import mx.tec.sabores.data.remote.NewReviewBody
+import mx.tec.sabores.data.remote.SaboresApi
+import mx.tec.sabores.data.remote.toDomain
+import mx.tec.sabores.data.remote.toSummary
 import mx.tec.sabores.domain.Restaurant
+import mx.tec.sabores.domain.RestaurantEnLista
+import mx.tec.sabores.domain.Review
+import retrofit2.HttpException
 
-class RestaurantRepository {
-    private val restaurants = listOf(
-        Restaurant(1, "La Chinampa", "Mexicana", "Av. Garza Sada 300",
-            "Cocina de mercado: tacos de guisado, sopes y agua del día.", 1, "🌮"),
-        Restaurant(2, "Nonna Rosa", "Italiana", "Río Nazas 118",
-            "Pasta fresca hecha en casa y horno de leña a la vista.", 3, "🍝"),
-        Restaurant(3, "Kaze", "Japonesa", "Vasconcelos 402",
-            "Barra de sushi de doce lugares. Menú corto que cambia cada semana.", 3, "🍣"),
-        Restaurant(4, "Verde Limón", "Vegetariana", "Hidalgo 1204",
-            "Bowls de temporada y jugos prensados en frío. Todo sin carne.", 2, "🥗"),
-        Restaurant(5, "Brasa 33", "Parrilla", "Gómez Morín 33",
-            "Cortes al carbón y papas rústicas. Reserva el fin de semana.", 3, "🥩")
-    )
+class RestaurantRepository(private val api: SaboresApi = Network.api) {
 
-    fun getAll(): List<Restaurant> = restaurants
-    fun getById(id: Int): Restaurant? = restaurants.firstOrNull { it.id == id }
+    suspend fun getAll(): List<Restaurant> =
+        api.getRestaurants().map { it.toDomain() }
+
+    suspend fun getById(id: Int): Restaurant =
+        api.getRestaurant(id).toDomain()
+
+    suspend fun getReviews(restaurantId: Int): List<Review> =
+        api.getReviews(restaurantId).map { it.toDomain() }
+
+    suspend fun getMyReviews(): List<Review> =
+        api.getMyReviews().map { it.toDomain() }
+
+    suspend fun getAllForList(): List<RestaurantEnLista> =
+        api.getRestaurants().map { RestaurantEnLista(it.toDomain(), it.toSummary()) }
+
+    suspend fun addReview(restaurantId: Int, stars: Int, comment: String): Review =
+        api.createReview(NewReviewBody(restaurantId, stars, comment)).toDomain()
+
+    suspend fun editReview(id: Int, stars: Int? = null, comment: String? = null): Review =
+        api.editReview(id, EditReviewBody(stars, comment)).toDomain()
+
+    /** true si se borró, false si el servidor dijo que no era tuya. */
+    suspend fun deleteReview(id: Int): Boolean {
+        val response = api.deleteReview(id)
+        return when (response.code()) {
+            204 -> true
+            403 -> false
+            else -> throw HttpException(response)
+        }
+    }
 }

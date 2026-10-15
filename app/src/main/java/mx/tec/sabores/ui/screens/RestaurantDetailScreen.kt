@@ -1,8 +1,9 @@
-package mx.tec.sabores.ui.screens
+﻿package mx.tec.sabores.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,11 +22,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import mx.tec.sabores.data.remote.Network
 import mx.tec.sabores.domain.RatingSummary
 import mx.tec.sabores.domain.Restaurant
 import mx.tec.sabores.domain.Review
@@ -41,6 +44,8 @@ fun RestaurantDetailScreen(
     reviews: List<Review>,
     onWriteReviewClick: () -> Unit,
     onBack: () -> Unit,
+    onEditReviewClick: (Review) -> Unit = {},
+    onDeleteReviewClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -103,6 +108,20 @@ fun RestaurantDetailScreen(
                             StarsRow(review.stars)
                             Spacer(Modifier.height(6.dp))
                             Text(review.comment, style = MaterialTheme.typography.bodyMedium)
+                            if (review.author == Network.alumno) {
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    TextButton(onClick = { onEditReviewClick(review) }) {
+                                        Text("Editar")
+                                    }
+                                    TextButton(onClick = { onDeleteReviewClick(review.id) }) {
+                                        Text("Borrar")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -124,8 +143,8 @@ private fun DetailPreview() {
             ),
             summary = RatingSummary(4.5, 2),
             reviews = listOf(
-                Review(1, 5, "Excelente comida y atención"),
-                Review(1, 4, "Muy ricos los tacos")
+                Review(1, 1, "a01286027", 5, "Excelente comida y atención"),
+                Review(2, 1, "a01234567", 4, "Muy ricos los tacos")
             ),
             onWriteReviewClick = {},
             onBack = {}

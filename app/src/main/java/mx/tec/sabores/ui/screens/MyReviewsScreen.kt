@@ -1,9 +1,10 @@
-package mx.tec.sabores.ui.screens
+﻿package mx.tec.sabores.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +27,12 @@ import mx.tec.sabores.ui.state.MyReviewItem
 import mx.tec.sabores.ui.theme.SaboresTheme
 
 @Composable
-fun MyReviewsScreen(items: List<MyReviewItem>, modifier: Modifier = Modifier) {
+fun MyReviewsScreen(
+    items: List<MyReviewItem>,
+    onEdit: (Review) -> Unit,
+    onDelete: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     if (items.isEmpty()) {
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
@@ -47,6 +54,18 @@ fun MyReviewsScreen(items: List<MyReviewItem>, modifier: Modifier = Modifier) {
                     StarsRow(item.review.stars)
                     Spacer(Modifier.height(6.dp))
                     Text(item.review.comment, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { onEdit(item.review) }) {
+                            Text("Editar")
+                        }
+                        TextButton(onClick = { onDelete(item.review.id) }) {
+                            Text("Borrar")
+                        }
+                    }
                 }
             }
         }
@@ -59,9 +78,11 @@ private fun MyReviewsPreview() {
     SaboresTheme {
         MyReviewsScreen(
             items = listOf(
-                MyReviewItem("La Chinampa", Review(1, 5, "Excelente servicio")),
-                MyReviewItem("Nonna Rosa", Review(2, 4, "Muy buena pasta"))
-            )
+                MyReviewItem("La Chinampa", Review(1, 1, "a01286027", 5, "Excelente servicio")),
+                MyReviewItem("Nonna Rosa", Review(2, 2, "a01286027", 4, "Muy buena pasta"))
+            ),
+            onEdit = {},
+            onDelete = {}
         )
     }
 }
